@@ -1,26 +1,35 @@
 import streamlit as st
 import joblib
 
-# Load files
 model = joblib.load("cybercrime_model.pkl")
-city_encoder = joblib.load("city_encoder.pkl")
-crime_encoder = joblib.load("crime_encoder.pkl")
-location_encoder = joblib.load("location_encoder.pkl")
+
+encoders = {}
+columns = ["City","Crime_Type","Time_of_Crime","Victim_Age_Group",
+           "Transaction_Mode","Bank_Type","Day_of_Week","Location"]
+
+for col in columns:
+    encoders[col] = joblib.load(f"{col}_encoder.pkl")
 
 st.title("Cybercrime Prediction System")
 
-# Show real names
-city = st.selectbox("Select City", list(city_encoder.classes_))
-crime = st.selectbox("Select Crime Type", list(crime_encoder.classes_))
-amount = st.number_input("Enter Fraud Amount")
+inputs = {}
+
+for col in columns[:-1]:
+    inputs[col] = st.selectbox(col, encoders[col].classes_)
+
+amount = st.number_input("Amount")
 
 if st.button("Predict"):
 
-    city_encoded = city_encoder.transform([city])[0]
-    crime_encoded = crime_encoder.transform([crime])[0]
+    encoded_input = []
 
-    prediction = model.predict([[city_encoded, crime_encoded, amount]])
+    for col in columns[:-1]:
+        encoded_input.append(encoders[col].transform([inputs[col]])[0])
 
-    location_name = location_encoder.inverse_transform(prediction)[0]
+    encoded_input.insert(2,amount)
 
-    st.success(f"Predicted Crime Location: {location_name}")
+    prediction = model.predict([encoded_input])
+
+    result = encoders["Location"].inverse_transform(prediction)
+
+    st.success(f"Predicted Location: {result[0]}")
