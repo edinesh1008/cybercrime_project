@@ -1,5 +1,21 @@
 City,Crime_Type,Amount,Location
-1,1,50000,2
-2,2,30000,1
-1,2,70000,3
-3,1,20000,2
+Chennai,Online Fraud,50000,Tambaram
+Chennai,UPI Scam,20000,Avadi
+Chennai,ATM Fraud,45000,Tambaram
+Coimbatore,Phishing Attack,30000,Erode
+Coimbatore,Investment Scam,80000,Tiruppur
+Madurai,OTP Fraud,15000,Dindigul
+Madurai,Online Fraud,25000,Tirunelveli
+Salem,Job Scam,40000,Erode
+Salem,UPI Scam,35000,Karur
+Tiruchirappalli,Social Media Hack,18000,Thanjavur
+Vellore,Online Fraud,60000,Kanchipuram
+Hosur,ATM Fraud,45000,Tiruppur
+Thoothukudi,Phishing Attack,22000,Tirunelveli
+Nagapattinam,Investment Scam,75000,Thanjavur
+Villupuram,OTP Fraud,14000,Cuddalore
+Tambaram,Online Fraud,32000,Chennai
+Avadi,UPI Scam,27000,Chennai
+Karur,Job Scam,38000,Salem
+Erode,ATM Fraud,42000,Coimbatore
+Tiruppur,Online Fraud,52000,Hosur
