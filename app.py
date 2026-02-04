@@ -1,42 +1,39 @@
 import streamlit as st
 import joblib
 
+# Load model
 model = joblib.load("cybercrime_model.pkl")
 
-encoders = {}
-columns = ["City","Crime_Type","Time_of_Crime","Victim_Age_Group",
-           "Transaction_Mode","Bank_Type","Day_of_Week","Location"]
-
-for col in columns:
-    encoders = {
-    "City": joblib.load("City_encoder.pkl"),
-    "Crime_Type": joblib.load("Crime_Type_encoder.pkl"),
-    "Time_of_Crime": joblib.load("Time_of_Crime_encoder.pkl"),
-    "Victim_Age_Group": joblib.load("Victim_Age_Group_encoder.pkl"),
-    "Transaction_Mode": joblib.load("Transaction_Mode_encoder.pkl"),
-    "Bank_Type": joblib.load("Bank_Type_encoder.pkl"),
-    "Day_of_Week": joblib.load("Day_of_Week_encoder.pkl"),
-    "Location": joblib.load("Location_encoder.pkl")
+# Load encoders (Lowercase safe version)
+encoders = {
+    "City": joblib.load("city_encoder.pkl"),
+    "Crime_Type": joblib.load("crime_type_encoder.pkl"),
+    "Time_of_Crime": joblib.load("time_of_crime_encoder.pkl"),
+    "Victim_Age_Group": joblib.load("victim_age_group_encoder.pkl"),
+    "Transaction_Mode": joblib.load("transaction_mode_encoder.pkl"),
+    "Bank_Type": joblib.load("bank_type_encoder.pkl"),
+    "Day_of_Week": joblib.load("day_of_week_encoder.pkl"),
+    "Location": joblib.load("location_encoder.pkl")
 }
-
 
 st.title("Cybercrime Prediction System")
 
+# User Inputs
 inputs = {}
 
-for col in columns[:-1]:
+for col in list(encoders.keys())[:-1]:
     inputs[col] = st.selectbox(col, encoders[col].classes_)
 
-amount = st.number_input("Amount")
+amount = st.number_input("Enter Fraud Amount")
 
 if st.button("Predict"):
 
     encoded_input = []
 
-    for col in columns[:-1]:
+    for col in list(encoders.keys())[:-1]:
         encoded_input.append(encoders[col].transform([inputs[col]])[0])
 
-    encoded_input.insert(2,amount)
+    encoded_input.insert(2, amount)
 
     prediction = model.predict([encoded_input])
 
