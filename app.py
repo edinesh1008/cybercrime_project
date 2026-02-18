@@ -10,6 +10,11 @@ st.set_page_config(
     layout="wide"
 )
 
+# ================= HEADER =================
+st.markdown("## 🇮🇳 Government of India")
+st.markdown("### National Cyber Crime Intelligence & Prediction Portal")
+st.markdown("---")
+
 # ================= LOAD MODEL =================
 model = joblib.load("cybercrime_model.pkl")
 
@@ -23,18 +28,6 @@ encoders = {
     "Day_of_Week": joblib.load("Day_of_Week_encoder.pkl"),
     "Location": joblib.load("location_encoder.pkl")
 }
-
-# ================= HEADER =================
-col1, col2 = st.columns([1, 6])
-
-with col1:
-    st.image("assets/emblem.png", width=80)
-
-with col2:
-    st.markdown("### Government of India")
-    st.markdown("#### National Cyber Crime Intelligence & Prediction Portal")
-
-st.markdown("---")
 
 # ================= NAVIGATION TABS =================
 tab1, tab2, tab3 = st.tabs(["Register Complaint", "Track Complaint", "About System"])
@@ -84,7 +77,6 @@ with tab1:
             prediction = model.predict([encoded_input])
             location = encoders["Location"].inverse_transform(prediction)
 
-            # Generate Complaint ID
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             complaint_id = f"NCCRP-{timestamp}-{random.randint(100,999)}"
 
