@@ -1,36 +1,14 @@
 import streamlit as st
 import joblib
+import random
+import datetime
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
-    page_title="Cybercrime Intelligence System",
-    page_icon="🛡️",
+    page_title="National Cyber Crime Intelligence Portal",
+    page_icon="🛡",
     layout="wide"
 )
-
-# ================= CUSTOM CSS =================
-st.markdown("""
-    <style>
-    .main-title {
-        font-size:40px;
-        font-weight:700;
-        color:#1f4e79;
-    }
-    .sub-title {
-        font-size:18px;
-        color:gray;
-    }
-    .prediction-box {
-        padding:20px;
-        border-radius:12px;
-        background-color:#f0f6ff;
-        border:1px solid #d6e4ff;
-        font-size:22px;
-        font-weight:600;
-        color:#0b3d91;
-    }
-    </style>
-""", unsafe_allow_html=True)
 
 # ================= LOAD MODEL =================
 model = joblib.load("cybercrime_model.pkl")
@@ -47,61 +25,106 @@ encoders = {
 }
 
 # ================= HEADER =================
-st.markdown('<div class="main-title">🛡 Cybercrime Intelligence Dashboard</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">AI-based Prediction of Likely Fraud Withdrawal Location</div>', unsafe_allow_html=True)
-st.markdown("---")
-
-# ================= SIDEBAR INPUTS =================
-st.sidebar.header("Enter Crime Details")
-
-inputs = {}
-
-for col in list(encoders.keys())[:-1]:
-    inputs[col] = st.sidebar.selectbox(col.replace("_", " "), encoders[col].classes_)
-
-amount = st.sidebar.number_input("Fraud Amount", min_value=1)
-month = st.sidebar.number_input("Month (1-12)", min_value=1, max_value=12)
-hour = st.sidebar.number_input("Hour (0-23)", min_value=0, max_value=23)
-
-predict_button = st.sidebar.button("🔍 Predict Location")
-
-# ================= MAIN PANEL =================
-col1, col2 = st.columns([2, 1])
+col1, col2 = st.columns([1, 6])
 
 with col1:
-    st.subheader("Case Summary")
-    st.write("This system analyzes fraud complaint parameters and predicts the most probable withdrawal hotspot using a trained Machine Learning model.")
+    st.image("assets/emblem.png", width=80)
 
 with col2:
-    st.info("Model Used: Random Forest Classifier")
+    st.markdown("### Government of India")
+    st.markdown("#### National Cyber Crime Intelligence & Prediction Portal")
 
-# ================= PREDICTION =================
-if predict_button:
+st.markdown("---")
 
-    encoded_input = [
-        encoders["City"].transform([inputs["City"]])[0],
-        encoders["Crime_Type"].transform([inputs["Crime_Type"]])[0],
-        amount,
-        encoders["Time_of_Crime"].transform([inputs["Time_of_Crime"]])[0],
-        encoders["Victim_Age_Group"].transform([inputs["Victim_Age_Group"]])[0],
-        encoders["Transaction_Mode"].transform([inputs["Transaction_Mode"]])[0],
-        encoders["Bank_Type"].transform([inputs["Bank_Type"]])[0],
-        encoders["Day_of_Week"].transform([inputs["Day_of_Week"]])[0],
-        month,
-        hour
-    ]
+# ================= NAVIGATION TABS =================
+tab1, tab2, tab3 = st.tabs(["Register Complaint", "Track Complaint", "About System"])
 
-    prediction = model.predict([encoded_input])
-    location = encoders["Location"].inverse_transform(prediction)
+# ==========================================================
+# TAB 1 — REGISTER COMPLAINT
+# ==========================================================
+with tab1:
 
-    st.markdown("---")
-    st.markdown(
-        f'<div class="prediction-box">📍 Predicted Crime Location: {location[0]}</div>',
-        unsafe_allow_html=True
-    )
+    st.subheader("Register Cyber Fraud Case")
 
-    st.success("Prediction generated successfully using trained ML model.")
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        city = st.selectbox("City", encoders["City"].classes_)
+        crime_type = st.selectbox("Crime Type", encoders["Crime_Type"].classes_)
+        amount = st.number_input("Fraud Amount", min_value=1)
+
+    with col2:
+        time_crime = st.selectbox("Time of Crime", encoders["Time_of_Crime"].classes_)
+        age_group = st.selectbox("Victim Age Group", encoders["Victim_Age_Group"].classes_)
+        transaction = st.selectbox("Transaction Mode", encoders["Transaction_Mode"].classes_)
+
+    with col3:
+        bank = st.selectbox("Bank Type", encoders["Bank_Type"].classes_)
+        day = st.selectbox("Day of Week", encoders["Day_of_Week"].classes_)
+        month = st.number_input("Month", min_value=1, max_value=12)
+        hour = st.number_input("Hour", min_value=0, max_value=23)
+
+    if st.button("🔍 Predict Fraud Location"):
+
+        with st.spinner("Analyzing complaint data using AI model..."):
+
+            encoded_input = [
+                encoders["City"].transform([city])[0],
+                encoders["Crime_Type"].transform([crime_type])[0],
+                amount,
+                encoders["Time_of_Crime"].transform([time_crime])[0],
+                encoders["Victim_Age_Group"].transform([age_group])[0],
+                encoders["Transaction_Mode"].transform([transaction])[0],
+                encoders["Bank_Type"].transform([bank])[0],
+                encoders["Day_of_Week"].transform([day])[0],
+                month,
+                hour
+            ]
+
+            prediction = model.predict([encoded_input])
+            location = encoders["Location"].inverse_transform(prediction)
+
+            # Generate Complaint ID
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            complaint_id = f"NCCRP-{timestamp}-{random.randint(100,999)}"
+
+        st.success(f"📍 Predicted High-Risk Location: {location[0]}")
+        st.info(f"🆔 Complaint Registration ID: {complaint_id}")
+
+# ==========================================================
+# TAB 2 — TRACK COMPLAINT
+# ==========================================================
+with tab2:
+    st.subheader("Track Your Complaint")
+
+    complaint_input = st.text_input("Enter Complaint ID")
+
+    if st.button("Track Status"):
+        if complaint_input:
+            st.success("Complaint Status: Under Investigation")
+        else:
+            st.warning("Please enter a valid Complaint ID")
+
+# ==========================================================
+# TAB 3 — ABOUT SYSTEM
+# ==========================================================
+with tab3:
+    st.subheader("About the System")
+
+    st.write("""
+    This Cybercrime Intelligence System uses Machine Learning 
+    to analyze complaint parameters and predict the most probable 
+    fraud withdrawal hotspot.
+
+    Model Used:
+    - Random Forest Classifier
+
+    Objective:
+    - Assist cybercrime investigation authorities
+    - Enable proactive intelligence generation
+    - Improve response time in fraud cases
+    """)
 
 # ================= FOOTER =================
 st.markdown("---")
-st.caption("Cybercrime Intelligence System | Developed using Python, Scikit-Learn & Streamlit")
+st.caption("National Cyber Crime Intelligence Portal | Powered by AI & Streamlit")
