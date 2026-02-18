@@ -3,34 +3,65 @@ import joblib
 
 # ================= PAGE CONFIG =================
 st.set_page_config(
-    page_title="Cybercrime Intelligence System",
-    page_icon="🛡️",
+    page_title="National Cyber Crime Intelligence Portal",
+    page_icon="🛡",
     layout="wide"
 )
 
 # ================= CUSTOM CSS =================
 st.markdown("""
-    <style>
-    .main-title {
-        font-size:40px;
-        font-weight:700;
-        color:#1f4e79;
-    }
-    .sub-title {
-        font-size:18px;
-        color:gray;
-    }
-    .prediction-box {
-        padding:20px;
-        border-radius:12px;
-        background-color:#f0f6ff;
-        border:1px solid #d6e4ff;
-        font-size:22px;
-        font-weight:600;
-        color:#0b3d91;
-    }
-    </style>
+<style>
+.header {
+    background-color:#003366;
+    padding:15px;
+    color:white;
+    font-size:24px;
+    font-weight:bold;
+}
+.subheader {
+    background-color:#0059b3;
+    padding:10px;
+    color:white;
+    font-size:18px;
+}
+.hero {
+    background-color:#0b3d91;
+    padding:40px;
+    color:white;
+    text-align:center;
+    border-radius:10px;
+}
+.predict-box {
+    padding:25px;
+    background-color:#e6f0ff;
+    border-radius:10px;
+    font-size:22px;
+    font-weight:bold;
+    color:#00264d;
+}
+.footer {
+    background-color:#003366;
+    color:white;
+    text-align:center;
+    padding:10px;
+    font-size:14px;
+}
+</style>
 """, unsafe_allow_html=True)
+
+# ================= HEADER =================
+st.markdown('<div class="header">Government of India | Ministry of Cyber Security</div>', unsafe_allow_html=True)
+st.markdown('<div class="subheader">National Cyber Crime Intelligence & Prediction Portal</div>', unsafe_allow_html=True)
+
+# ================= HERO SECTION =================
+st.markdown("""
+<div class="hero">
+<h1>Cybercrime Predictive Intelligence System</h1>
+<p>AI-Based Prediction of Likely Fraud Withdrawal Locations</p>
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
 
 # ================= LOAD MODEL =================
 model = joblib.load("cybercrime_model.pkl")
@@ -46,47 +77,40 @@ encoders = {
     "Location": joblib.load("location_encoder.pkl")
 }
 
-# ================= HEADER =================
-st.markdown('<div class="main-title">🛡 Cybercrime Intelligence Dashboard</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">AI-based Prediction of Likely Fraud Withdrawal Location</div>', unsafe_allow_html=True)
-st.markdown("---")
+# ================= INPUT SECTION =================
+st.subheader("Register Cyber Fraud Case")
 
-# ================= SIDEBAR INPUTS =================
-st.sidebar.header("Enter Crime Details")
-
-inputs = {}
-
-for col in list(encoders.keys())[:-1]:
-    inputs[col] = st.sidebar.selectbox(col.replace("_", " "), encoders[col].classes_)
-
-amount = st.sidebar.number_input("Fraud Amount", min_value=1)
-month = st.sidebar.number_input("Month (1-12)", min_value=1, max_value=12)
-hour = st.sidebar.number_input("Hour (0-23)", min_value=0, max_value=23)
-
-predict_button = st.sidebar.button("🔍 Predict Location")
-
-# ================= MAIN PANEL =================
-col1, col2 = st.columns([2, 1])
+col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.subheader("Case Summary")
-    st.write("This system analyzes fraud complaint parameters and predicts the most probable withdrawal hotspot using a trained Machine Learning model.")
+    city = st.selectbox("City", encoders["City"].classes_)
+    crime_type = st.selectbox("Crime Type", encoders["Crime_Type"].classes_)
+    amount = st.number_input("Fraud Amount", min_value=1)
 
 with col2:
-    st.info("Model Used: Random Forest Classifier")
+    time_crime = st.selectbox("Time of Crime", encoders["Time_of_Crime"].classes_)
+    age_group = st.selectbox("Victim Age Group", encoders["Victim_Age_Group"].classes_)
+    transaction = st.selectbox("Transaction Mode", encoders["Transaction_Mode"].classes_)
 
-# ================= PREDICTION =================
-if predict_button:
+with col3:
+    bank = st.selectbox("Bank Type", encoders["Bank_Type"].classes_)
+    day = st.selectbox("Day of Week", encoders["Day_of_Week"].classes_)
+    month = st.number_input("Month", min_value=1, max_value=12)
+    hour = st.number_input("Hour", min_value=0, max_value=23)
+
+st.markdown("")
+
+if st.button("🔍 Predict Fraud Location"):
 
     encoded_input = [
-        encoders["City"].transform([inputs["City"]])[0],
-        encoders["Crime_Type"].transform([inputs["Crime_Type"]])[0],
+        encoders["City"].transform([city])[0],
+        encoders["Crime_Type"].transform([crime_type])[0],
         amount,
-        encoders["Time_of_Crime"].transform([inputs["Time_of_Crime"]])[0],
-        encoders["Victim_Age_Group"].transform([inputs["Victim_Age_Group"]])[0],
-        encoders["Transaction_Mode"].transform([inputs["Transaction_Mode"]])[0],
-        encoders["Bank_Type"].transform([inputs["Bank_Type"]])[0],
-        encoders["Day_of_Week"].transform([inputs["Day_of_Week"]])[0],
+        encoders["Time_of_Crime"].transform([time_crime])[0],
+        encoders["Victim_Age_Group"].transform([age_group])[0],
+        encoders["Transaction_Mode"].transform([transaction])[0],
+        encoders["Bank_Type"].transform([bank])[0],
+        encoders["Day_of_Week"].transform([day])[0],
         month,
         hour
     ]
@@ -96,12 +120,10 @@ if predict_button:
 
     st.markdown("---")
     st.markdown(
-        f'<div class="prediction-box">📍 Predicted Crime Location: {location[0]}</div>',
+        f'<div class="predict-box">📍 Predicted High-Risk Location: {location[0]}</div>',
         unsafe_allow_html=True
     )
 
-    st.success("Prediction generated successfully using trained ML model.")
-
 # ================= FOOTER =================
 st.markdown("---")
-st.caption("Cybercrime Intelligence System | Developed using Python, Scikit-Learn & Streamlit")
+st.markdown('<div class="footer">Cybercrime Intelligence System | Powered by Machine Learning & Streamlit</div>', unsafe_allow_html=True)
